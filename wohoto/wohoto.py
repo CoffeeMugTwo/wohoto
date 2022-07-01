@@ -32,6 +32,26 @@ def read_input_files(list_of_files: list) -> pd.DataFrame:
                          ignore_index=True)\
                  .sort_values(by=["date", "start"],
                               axis=0)
+
+    # Convert date to datetime
+    # hours_df["date"] = pd.to_datetime(hours_df["date"])
+
+
+
+    # add year-month column
+    hours_df['year_month'] = hours_df.apply(
+        lambda row: f"{pd.Timestamp(row['date']).year}-{pd.Timestamp(row['date']).month}",
+        axis=1
+    )
+    # add calendar week column
+    hours_df['calendar_week'] = hours_df.apply(
+        lambda row: pd.Timestamp(row['date']).week,
+        axis=1
+    )
+
+    print(hours_df.info())
+    print(hours_df)
+
     return hours_df
 
 
@@ -98,14 +118,15 @@ def aggregate_by_project(hours_df: pd.DataFrame) -> pd.DataFrame:
     day_project_hours_df : pd.DataFrame
         Data frame containing the summed up hours per day and project
     """
-    agg_df = hours_df.loc[:, ["date", "start", "end", "project", "comment"]]
+    agg_df = hours_df.loc[:, ["year_month", "date", "start", "end", "project", "comment"]]
 
     agg_df["duration"] = agg_df.apply(
         lambda row: get_time_difference(row["date"], row["start"], row["date"], row["end"]),
         axis=1
     )
     # ToDo: Add functionality to remove duplicates in comments when summing up
-    day_project_hours_df = agg_df.groupby(["date", "project"]).apply(agg_sum_project)
+    # day_project_hours_df = agg_df.groupby(["date", "project"]).apply(agg_sum_project)
+    day_project_hours_df = agg_df.groupby(["year_month", "project", "date"]).apply(agg_sum_project)
     return day_project_hours_df
 
 

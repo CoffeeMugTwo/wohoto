@@ -16,11 +16,13 @@ def main():
     """Console script for wohoto."""
     parser = argparse.ArgumentParser(
         description="A simple tool to process working hours data.")
-    parser.add_argument("--working-hours-files",
+    parser.add_argument("-i",
+                        "--working-hours-files",
                         help="File(s) with working hours data",
                         required=True,
                         nargs="*")
-    parser.add_argument("--output-folder",
+    parser.add_argument("-o",
+                        "--output-folder",
                         help="Folder for output files (overwrites existing results!)",
                         required=True)
     args = parser.parse_args()
