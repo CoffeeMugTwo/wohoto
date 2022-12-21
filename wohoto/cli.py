@@ -8,6 +8,7 @@ import sys
 from wohoto.wohoto import read_input_files
 from wohoto.wohoto import aggregate_by_project
 from wohoto.wohoto import aggregate_by_day
+from wohoto.wohoto import aggregate_by_sub_project
 
 from wohoto.figures import make_plot
 
@@ -32,10 +33,12 @@ def main():
 
     day_project_hours_df = aggregate_by_project(working_hours_df)
     day_hours_df = aggregate_by_day(working_hours_df)
+    sub_project_hours_df = aggregate_by_sub_project(working_hours_df)
 
     print(f"Writing output to: {args.output_folder}")
     day_project_hours_df.to_html(f"{args.output_folder}/day_project_hours.html")
     day_hours_df.to_html(f"{args.output_folder}/day_hours.html")
+    sub_project_hours_df.to_html(f"{args.output_folder}/sub_project_hours.html")
 
     print(f"Storing plots in: {args.output_folder}")
     fig = make_plot(working_hours_df)

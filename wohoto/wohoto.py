@@ -18,7 +18,7 @@ def read_input_files(list_of_files: list) -> pd.DataFrame:
     hours_df : pd.DataFrame
         Sorted data frame containing all rows in the provided files
     """
-    column_names = ["date", "start", "end", "project", "type", "comment"]
+    column_names = ["date", "start", "end", "project", "sub_project", "type", "comment"]
     dummy_df = pd.DataFrame(columns=column_names)
     temp_df_list = [dummy_df]
     for input_file in list_of_files:
@@ -29,14 +29,14 @@ def read_input_files(list_of_files: list) -> pd.DataFrame:
         temp_df_list.append(temp_df)
 
     hours_df = pd.concat(temp_df_list,
-                         ignore_index=True)\
+                         ignore_index=True,
+                         axis=0,
+                         join="inner")\
                  .sort_values(by=["date", "start"],
                               axis=0)
 
     # Convert date to datetime
     # hours_df["date"] = pd.to_datetime(hours_df["date"])
-
-
 
     # add year-month column
     hours_df['year_month'] = hours_df.apply(
@@ -128,6 +128,31 @@ def aggregate_by_project(hours_df: pd.DataFrame) -> pd.DataFrame:
     # day_project_hours_df = agg_df.groupby(["date", "project"]).apply(agg_sum_project)
     day_project_hours_df = agg_df.groupby(["year_month", "project", "date"]).apply(agg_sum_project)
     return day_project_hours_df
+
+def aggregate_by_sub_project(hours_df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Process *hours_df* to return a data frame with summed up working hours per sub project.
+
+    Parameters
+    ----------
+    hours_df : pd.DataFrame
+        Data frame containing the working hours and project information
+
+    Returns
+    -------
+    sub_project_hours_df : pd.DataFrame
+        Data frame containing the summed up hours per project and sub_project
+    """
+    agg_df = hours_df.loc[:, ["year_month", "date", "start", "end", "project", "sub_project", "comment"]]
+
+    agg_df["duration"] = agg_df.apply(
+        lambda row: get_time_difference(row["date"], row["start"], row["date"], row["end"]),
+        axis=1
+    )
+    # ToDo: Add functionality to remove duplicates in comments when summing up
+    # day_project_hours_df = agg_df.groupby(["date", "project"]).apply(agg_sum_project)
+    sub_project_hours_df = agg_df.groupby(["project", "sub_project"]).apply(agg_sum_project)
+    return sub_project_hours_df
 
 
 def agg_sum_day(data_frame: pd.DataFrame) -> pd.DataFrame:
